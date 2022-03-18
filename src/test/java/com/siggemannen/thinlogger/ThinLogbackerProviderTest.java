@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Test {@link ThinLogbackerProvider}
+ * Tests {@link ThinLogbackerProvider}
  */
 public class ThinLogbackerProviderTest
 {

@@ -20,13 +20,6 @@ public class FileAppender implements Appender
     private final String pattern;
     private File prevFile = null;
     private String fpattPrev = null;
-    /*
-    private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
-            .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
-            .appendValue(MONTH_OF_YEAR, 2)
-            .appendValue(DAY_OF_MONTH, 2)
-            .toFormatter();
-            */
     private final ReentrantLock rl = new ReentrantLock();
     private static final byte[] LINE_SEPARATOR = System.lineSeparator().getBytes();
     private final Map<File, FileOutputWrapper> ros = new HashMap<>();

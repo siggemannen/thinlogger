@@ -1,1 +1,1 @@
-#A very slim logging implementation for SLF4J
+# A very slim logging implementation for SLF4J

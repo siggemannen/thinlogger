@@ -20,8 +20,6 @@ public class ThinLogger extends LegacyAbstractLogger
 {
     private static final long serialVersionUID = -632788891211436180L;
 
-    private static final long START_TIME = System.currentTimeMillis();
-
     protected static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
     protected static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
     protected static final int LOG_LEVEL_INFO = LocationAwareLogger.INFO_INT;
@@ -37,22 +35,7 @@ public class ThinLogger extends LegacyAbstractLogger
     protected static final int LOG_LEVEL_OFF = LOG_LEVEL_ERROR + 10;
 
     private static boolean INITIALIZED = false;
-    //public static final DateFormat FORMAT_WITH_TIME_AND_MS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
- /*
-    private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
-            .parseCaseInsensitive()
-            .append(DateTimeFormatter.ISO_LOCAL_DATE)
-            .appendLiteral(' ')
-            //.append(DateTimeFormatter.ISO_LOCAL_TIME)
-            .appendValue(HOUR_OF_DAY, 2)
-            .appendLiteral(':')
-            .appendValue(MINUTE_OF_HOUR, 2)
-            .appendLiteral(':')
-            .appendValue(SECOND_OF_MINUTE, 2)
-            .appendLiteral('.')
-            .appendFraction(NANO_OF_SECOND, 3, 3, false)
-            .toFormatter();
-*/
+
     private static final String CONFIGURATION_FILE = "logger.properties";
 
     private static final Properties properties = new Properties();
@@ -67,8 +50,6 @@ public class ThinLogger extends LegacyAbstractLogger
         INITIALIZED = true;
     }
 
-    /** The current log level */
-    //protected int currentLogLevel = LOG_LEVEL_INFO;
     /** The short name of this simple log instance */
     private transient String shortLogName = null;
 
@@ -176,31 +157,17 @@ public class ThinLogger extends LegacyAbstractLogger
                 app.append(level, t, lazyString);
             }
         }
-        /*
-        PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
-        
-        synchronized (CONFIG_PARAMS) {
-            targetStream.println(buf.toString());
-            writeThrowable(t, targetStream);
-            targetStream.flush();
-        } */
     }
 
     /**
      * Returns formatted date
+     * <P>
+     * This version avoids non-threadsafe formatters and friends
      * 
-     * <P>This version avoids non-threadsafe formatters and friends
      * @return
      */
     private String getFormattedDate()
     {
-        //Date now = new Date();
-
-        //"yyyy-MM-dd HH:mm:ss.SSS"
-        //synchronized (da /*CONFIG_PARAMS.dateFormatter*/)
-        //        {
-        //            dateText = FORMAT_WITH_TIME_AND_MS.format(now); /*CONFIG_PARAMS.dateFormatter.format(now);*/
-        //        }
         LocalDateTime now = LocalDateTime.now();
         String ms = "" + now.getNano() / 1000_000;
         return new StringBuilder().append(now.getYear())
@@ -208,19 +175,19 @@ public class ThinLogger extends LegacyAbstractLogger
                 .append(now.getMonthValue() < 10 ? "0" : "")
                 .append(now.getMonthValue())
                 .append("-")
-                .append(now.getDayOfMonth() < 10? "0":"")
+                .append(now.getDayOfMonth() < 10 ? "0" : "")
                 .append(now.getDayOfMonth())
                 .append(" ")
-                .append(now.getHour() < 10?"0":"")
+                .append(now.getHour() < 10 ? "0" : "")
                 .append(now.getHour())
                 .append(":")
-                .append(now.getMinute() < 10?"0":"")
+                .append(now.getMinute() < 10 ? "0" : "")
                 .append(now.getMinute())
                 .append(":")
-                .append(now.getSecond() < 10 ? "0":"")
+                .append(now.getSecond() < 10 ? "0" : "")
                 .append(now.getSecond())
                 .append(".")
-                .append(("00"+ms).substring(ms.length()-1))
+                .append(("00" + ms).substring(ms.length() - 1))
                 .toString();
         //return FORMATTER.format(now);
     }
@@ -229,38 +196,6 @@ public class ThinLogger extends LegacyAbstractLogger
     {
         return name.substring(name.lastIndexOf(".") + 1);
     }
-
-    // /**
-    // * For formatted messages, first substitute arguments and then log.
-    // *
-    // * @param level
-    // * @param format
-    // * @param arg1
-    // * @param arg2
-    // */
-    // private void formatAndLog(int level, String format, Object arg1, Object arg2) {
-    // if (!isLevelEnabled(level)) {
-    // return;
-    // }
-    // FormattingTuple tp = MessageFormatter.format(format, arg1, arg2);
-    // log(level, tp.getMessage(), tp.getThrowable());
-    // }
-
-    // /**
-    // * For formatted messages, first substitute arguments and then log.
-    // *
-    // * @param level
-    // * @param format
-    // * @param arguments
-    // * a list of 3 ore more arguments
-    // */
-    // private void formatAndLog(int level, String format, Object... arguments) {
-    // if (!isLevelEnabled(level)) {
-    // return;
-    // }
-    // FormattingTuple tp = MessageFormatter.arrayFormat(format, arguments);
-    // log(level, tp.getMessage(), tp.getThrowable());
-    // }
 
     /**
      * Is the given log level currently enabled?
@@ -337,64 +272,27 @@ public class ThinLogger extends LegacyAbstractLogger
     {
 
         StringBuilder buf = new StringBuilder(32);
+        buf.append(getFormattedDate());
+        buf.append(SP);
+        buf.append('[');
+        buf.append(Thread.currentThread().getName());
+        buf.append("] ");
 
-        // Append date-time if so configured
-        if (true/*CONFIG_PARAMS.showDateTime*/)
-        {
-            if (true/*CONFIG_PARAMS.dateFormatter != null*/)
-            {
-                buf.append(getFormattedDate());
-                buf.append(SP);
-            }
-            else
-            {
-                buf.append(System.currentTimeMillis() - START_TIME);
-                buf.append(SP);
-            }
-        }
+        buf.append(TID_PREFIX);
+        buf.append(Thread.currentThread().getId());
+        buf.append(SP);
+        buf.append('[');
 
-        // Append current thread name if so configured
-        if (true/*CONFIG_PARAMS.showThreadName*/)
-        {
-            buf.append('[');
-            buf.append(Thread.currentThread().getName());
-            buf.append("] ");
-        }
-
-        if (true/*CONFIG_PARAMS.showThreadId*/)
-        {
-            buf.append(TID_PREFIX);
-            buf.append(Thread.currentThread().getId());
-            buf.append(SP);
-        }
-
-        if (true/*CONFIG_PARAMS.levelInBrackets*/)
-        {
-            buf.append('[');
-        }
-
-        // Append a readable representation of the log level
         String levelStr = level.name();
         buf.append(levelStr);
-        if (true/*CONFIG_PARAMS.levelInBrackets*/)
-        {
-            buf.append(']');
-        }
+        buf.append(']');
         buf.append(SP);
 
-        // Append the name of the log instance if so configured
-        if (true/*CONFIG_PARAMS.showShortLogName*/)
+        if (shortLogName == null)
         {
-            if (shortLogName == null)
-            {
-                shortLogName = computeShortName();
-            }
-            buf.append(String.valueOf(shortLogName)).append(" - ");
+            shortLogName = computeShortName();
         }
-        else if (true/*CONFIG_PARAMS.showLogName*/)
-        {
-            buf.append(String.valueOf(name)).append(" - ");
-        }
+        buf.append(String.valueOf(shortLogName)).append(" - ");
 
         if (markers != null)
         {
