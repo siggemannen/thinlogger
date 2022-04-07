@@ -83,14 +83,20 @@ public class FileAppender implements Appender
 
     private File getFileToAppend() throws IOException
     {
-        String fpatt = pattern.replace("${byDay}", today());
+        String fpatt = pattern.replace("${byDay}", today()).replace("${byYear}", toyear()).replace("${byHour}", tohour());
         if (fpattPrev == null || !fpattPrev.equals(fpatt))
         {
             //Clean up prev
-            FileOutputWrapper os = ros.remove(fpattPrev);
+            FileOutputWrapper os = ros.remove(prevFile);
             if (os != null)
             {
-                os.getOs().close();
+                try
+                {
+                    os.getOs().close();
+                }
+                catch (Exception ex)
+                {
+                }
             }
             fpattPrev = fpatt;
             File f = new File(fpatt);
@@ -103,15 +109,24 @@ public class FileAppender implements Appender
         }
         return prevFile;
     }
+    
+    private String toyear()
+    {
+        return "" + LocalDateTime.now().getYear();
+    }
+    
+    private String tohour()
+    {
+        int hour = LocalDateTime.now().getHour();
+        return hour < 10 ? "0": "" + hour;
+    }
 
     private String today()
     {
         LocalDateTime now = LocalDateTime.now();
         return new StringBuilder().append(now.getYear())
-                .append("-")
                 .append(now.getMonthValue() < 10 ? "0" : "")
                 .append(now.getMonthValue())
-                .append("-")
                 .append(now.getDayOfMonth() < 10 ? "0" : "")
                 .append(now.getDayOfMonth())
                 .toString();
