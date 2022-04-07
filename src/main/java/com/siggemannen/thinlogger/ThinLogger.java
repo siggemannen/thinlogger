@@ -87,6 +87,9 @@ public class ThinLogger extends LegacyAbstractLogger
     private static ConsoleAppender consoleAppender;
 
     private static FileAppender fileAppender;
+    
+    private static Level consoleLevel = null;
+    private static Level fileLevel = null;
 
     /**
      * Package access allows only {@link ThinLoggerFactory} to instantiate SimpleLogger instances.
@@ -135,7 +138,7 @@ public class ThinLogger extends LegacyAbstractLogger
         {
         }
     }
-
+    
     /**
      * To avoid intermingling of log messages and associated stack traces, the two operations are done in a synchronized block.
      *
@@ -150,6 +153,21 @@ public class ThinLogger extends LegacyAbstractLogger
             Appender app = appenders.get(i);
             if (app.applicable(level))
             {
+                if (app == consoleAppender)
+                {
+                    if (consoleLevel != null && consoleLevel.compareTo(level) > 0)
+                    {
+                        continue;
+                    }
+                }
+                else if (app == fileAppender)
+                {
+                    if (fileLevel != null && fileLevel.compareTo(level) > 0)
+                    {
+                        continue;
+                    }
+                }
+                
                 if (lazyString == null)
                 {
                     lazyString = buf.toString();
@@ -331,4 +349,13 @@ public class ThinLogger extends LegacyAbstractLogger
         return null;
     }
 
+    public static void setConsoleLevel(Level level)
+    {
+        consoleLevel = level;
+    }
+
+    public static void setFileLevel(Level level)
+    {
+        fileLevel = level;
+    }
 }
